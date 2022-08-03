@@ -112,7 +112,6 @@ export class TestRail {
 
   public publishResults(results: TestRailResult[]) {
     this.runId = TestRailCache.retrieve("runId");
-    TestRailLogger.log(`RUNID during publish ${this.runId}`);
     return this.makeSync(
       axios({
         method: "post",

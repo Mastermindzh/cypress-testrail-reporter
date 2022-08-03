@@ -153,7 +153,6 @@ var TestRail = /** @class */ (function () {
     };
     TestRail.prototype.publishResults = function (results) {
         this.runId = TestRailCache.retrieve("runId");
-        TestRailLogger.log("RUNID during publish " + this.runId);
         return this.makeSync(axios({
             method: "post",
             url: this.base + "/add_results_for_cases/" + this.runId,
