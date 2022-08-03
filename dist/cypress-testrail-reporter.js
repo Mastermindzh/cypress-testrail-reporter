@@ -22,10 +22,11 @@ var testrail_1 = require("./testrail");
 var shared_1 = require("./shared");
 var testrail_interface_1 = require("./testrail.interface");
 var testrail_validation_1 = require("./testrail.validation");
-var TestRailCache = require('./testrail.cache');
-var TestRailLogger = require('./testrail.logger');
-var chalk = require('chalk');
+var TestRailCache = require("./testrail.cache");
+var TestRailLogger = require("./testrail.logger");
+var chalk = require("chalk");
 var runCounter = 1;
+var globalRunId = undefined;
 var CypressTestRailReporter = /** @class */ (function (_super) {
     __extends(CypressTestRailReporter, _super);
     function CypressTestRailReporter(runner, options) {
@@ -34,17 +35,28 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
         _this.suiteId = [];
         _this.serverTestCaseIds = [];
         _this.reporterOptions = options.reporterOptions;
+        if (_this.reporterOptions.singleRun === undefined) {
+            _this.reporterOptions.singleRun = false;
+        }
+        if (process.env.CYPRESS_TESTRAIL_REPORTER_SINGLE_RUN) {
+            _this.reporterOptions.username =
+                process.env.CYPRESS_TESTRAIL_REPORTER_SINGLE_RUN;
+        }
         if (process.env.CYPRESS_TESTRAIL_REPORTER_USERNAME) {
-            _this.reporterOptions.username = process.env.CYPRESS_TESTRAIL_REPORTER_USERNAME;
+            _this.reporterOptions.username =
+                process.env.CYPRESS_TESTRAIL_REPORTER_USERNAME;
         }
         if (process.env.CYPRESS_TESTRAIL_REPORTER_PASSWORD) {
-            _this.reporterOptions.password = process.env.CYPRESS_TESTRAIL_REPORTER_PASSWORD;
+            _this.reporterOptions.password =
+                process.env.CYPRESS_TESTRAIL_REPORTER_PASSWORD;
         }
         if (process.env.CYPRESS_TESTRAIL_REPORTER_RUNNAME) {
-            _this.reporterOptions.runName = process.env.CYPRESS_TESTRAIL_REPORTER_RUNNAME;
+            _this.reporterOptions.runName =
+                process.env.CYPRESS_TESTRAIL_REPORTER_RUNNAME;
         }
         if (process.env.CYPRESS_TESTRAIL_REPORTER_GROUPID) {
-            _this.reporterOptions.runName = process.env.CYPRESS_TESTRAIL_REPORTER_GROUPID;
+            _this.reporterOptions.runName =
+                process.env.CYPRESS_TESTRAIL_REPORTER_GROUPID;
         }
         _this.testRailApi = new testrail_1.TestRail(_this.reporterOptions);
         _this.testRailValidation = new testrail_validation_1.TestRailValidation(_this.reporterOptions);
@@ -71,62 +83,70 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
          * runner will not be triggered
          */
         if (_this.suiteId && _this.suiteId.toString().length) {
-            runner.on('start', function () {
+            runner.on("start", function () {
                 _this.serverTestCaseIds = _this.testRailApi.getCases(_this.suiteId);
                 /**
-                * runCounter is used to count how many spec files we have during one run
-                * in order to wait for close test run function
-                */
-                TestRailCache.store('runCounter', runCounter);
+                 * runCounter is used to count how many spec files we have during one run
+                 * in order to wait for close test run function
+                 */
+                TestRailCache.store("runCounter", runCounter);
                 /**
-                * creates a new TestRail Run
-                * unless a cached value already exists for an existing TestRail Run in
-                * which case that will be used and no new one created.
-                */
-                if (!TestRailCache.retrieve('runId')) {
-                    if (_this.reporterOptions.suiteId) {
-                        TestRailLogger.log("Following suiteId has been set in cypress.json file: " + _this.suiteId);
-                    }
-                    var executionDateTime = moment().format('MMM Do YYYY, HH:mm (Z)');
-                    var name_1 = (_this.reporterOptions.runName || 'Automated test run') + " " + executionDateTime;
-                    if (_this.reporterOptions.disableDescription) {
-                        var description = '';
+                 * creates a new TestRail Run
+                 * unless a cached value already exists for an existing TestRail Run in
+                 * which case that will be used and no new one created.
+                 */
+                if (_this.reporterOptions.singleRun && !globalRunId) {
+                    if (!TestRailCache.retrieve("runId")) {
+                        if (_this.reporterOptions.suiteId) {
+                            TestRailLogger.log("Following suiteId has been set in cypress.json file: " + _this.suiteId);
+                        }
+                        var executionDateTime = moment().format("MMM Do YYYY, HH:mm (Z)");
+                        var name_1 = (_this.reporterOptions.runName || "Automated test run") + " " + executionDateTime;
+                        var description = "";
+                        if (!_this.reporterOptions.disableDescription) {
+                            if (process.env.CYPRESS_CI_JOB_URL) {
+                                description = process.env.CYPRESS_CI_JOB_URL;
+                            }
+                            else {
+                                description =
+                                    "For the Cypress run visit https://dashboard.cypress.io/#/projects/runs";
+                            }
+                        }
+                        TestRailLogger.log("Creating TestRail Run with name: " + name_1);
+                        globalRunId = _this.testRailApi.createRun(name_1, description, _this.suiteId);
+                        if (!_this.reporterOptions.singleRun) {
+                            TestRailCache.store("runId", globalRunId);
+                        }
                     }
                     else {
-                        if (process.env.CYPRESS_CI_JOB_URL) {
-                            var description = process.env.CYPRESS_CI_JOB_URL;
-                        }
-                        else {
-                            var description = 'For the Cypress run visit https://dashboard.cypress.io/#/projects/runs';
-                        }
+                        // use the cached TestRail Run ID
+                        _this.runId = TestRailCache.retrieve("runId");
+                        TestRailLogger.log("Using existing TestRail Run with ID: '" + _this.runId + "'");
                     }
-                    TestRailLogger.log("Creating TestRail Run with name: " + name_1);
-                    _this.testRailApi.createRun(name_1, description, _this.suiteId);
                 }
                 else {
-                    // use the cached TestRail Run ID
-                    _this.runId = TestRailCache.retrieve('runId');
-                    TestRailLogger.log("Using existing TestRail Run with ID: '" + _this.runId + "'");
+                    TestRailCache.store("runId", globalRunId);
+                    _this.runId = globalRunId;
                 }
             });
-            runner.on('pass', function (test) {
+            runner.on("pass", function (test) {
                 _this.submitResults(testrail_interface_1.Status.Passed, test, "Execution time: " + test.duration + "ms");
             });
-            runner.on('fail', function (test, err) {
+            runner.on("fail", function (test, err) {
                 _this.submitResults(testrail_interface_1.Status.Failed, test, "" + err.message);
             });
-            runner.on('retry', function (test) {
-                _this.submitResults(testrail_interface_1.Status.Retest, test, 'Cypress retry logic has been triggered!');
+            runner.on("retry", function (test) {
+                _this.submitResults(testrail_interface_1.Status.Retest, test, "Cypress retry logic has been triggered!");
             });
-            runner.on('end', function () {
+            runner.on("end", function () {
                 /**
                  * When we reach final number of spec files
                  * we should close test run at the end
                  */
                 var numSpecFiles = _this.testRailValidation.countTestSpecFiles();
-                var counter = TestRailCache.retrieve('runCounter');
+                var counter = TestRailCache.retrieve("runCounter");
                 // load runId before purging testrail-cache.txt
-                _this.runId = TestRailCache.retrieve('runId');
+                _this.runId = TestRailCache.retrieve("runId");
                 if (numSpecFiles.length > counter) {
                     runCounter++;
                 }
@@ -141,7 +161,7 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
                  * Notify about the results at the end of execution
                  */
                 if (_this.results.length == 0) {
-                    TestRailLogger.warn('No testcases were matched with TestRail. Ensure that your tests are declared correctly and titles contain matches to format of Cxxxx');
+                    TestRailLogger.warn("No testcases were matched with TestRail. Ensure that your tests are declared correctly and titles contain matches to format of Cxxxx");
                 }
                 else {
                     var path = "runs/view/" + _this.runId;
@@ -162,7 +182,9 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
         var _this = this;
         var caseIds = (0, shared_1.titleToCaseIds)(test.title);
         var invalidCaseIds = caseIds.filter(function (caseId) { return !_this.serverTestCaseIds.includes(caseId); });
-        caseIds = caseIds.filter(function (caseId) { return _this.serverTestCaseIds.includes(caseId); });
+        caseIds = caseIds.filter(function (caseId) {
+            return _this.serverTestCaseIds.includes(caseId);
+        });
         if (invalidCaseIds.length > 0)
             TestRailLogger.log("The following test IDs were found in Cypress tests, but not found in Testrail: " + invalidCaseIds);
         if (caseIds.length) {

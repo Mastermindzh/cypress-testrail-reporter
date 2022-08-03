@@ -4,7 +4,7 @@
 [![downloads](https://img.shields.io/npm/dt/cypress-testrail-reporter.svg)](https://www.npmjs.com/package/cypress-testrail-reporter)
 [![MIT License](https://img.shields.io/github/license/Vivify-Ideas/cypress-testrail-reporter.svg)](https://github.com/Vivify-Ideas/cypress-testrail-reporter/blob/master/LICENSE.md)
 
-Publishes [Cypress](https://www.cypress.io/) runs on TestRail. 
+Publishes [Cypress](https://www.cypress.io/) runs on TestRail.
 
 Core features:
 
@@ -13,7 +13,7 @@ Core features:
 * Test run would be closed after last spec(test) file has been finished
 * Possibility to upload screenshots for failed and retried test cases - optional (**allowFailedScreenshotUpload: true**)
 * Multi suite project support (set **suiteId=1** in **cypress.json** or set it as a part of runtime environment variables as **testRailSuiteId=1**)
-* Reporting retest status of a test cases - handy in terms of marking tests as flaky (test is reported with retest status for the first try and after second try it passes) Note: cypress retry logic must be enabled for this feature.  
+* Reporting retest status of a test cases - handy in terms of marking tests as flaky (test is reported with retest status for the first try and after second try it passes) Note: cypress retry logic must be enabled for this feature.
 
 **Important note:** Keep your tests under the one of the following folder structure:
 
@@ -70,6 +70,8 @@ environment variables, this option would be overwritten with it.
 
 **runName**: _string_ (optional) name of the Testrail run. When you set `CYPRESS_TESTRAIL_REPORTER_RUNNAME` in runtime environment variables, this option would be overwritten with it.
 
+**singleRun**: _string_ (optional) Causes the reporter to add all results into a single test run in Testrail
+
 **disableDescription**: _bool_ (optional: default is false) possibility to disable description for test run in case that someone don’t have cypress dashboard feature (_disableDescription: true_)
 
 **allowFailedScreenshotUpload**: _bool_ (optional: default is false) will upload failed screenshot to corresponding test result comment for easier debugging of failure.
@@ -89,14 +91,14 @@ This reporter can handle multiple suite project in TestRail. In order to use it,
 ```Javascript
 
 e2e_test1:
-  script: 
+  script:
     - e2e-setup.sh
   variables:
     CYPRESS_SPEC: "cypress/integration/dashboard/*"
     TESTRAIL_SUITEID: 1
 
 e2e_test2:
-  script: 
+  script:
     - e2e-setup.sh
   variables:
     CYPRESS_SPEC: "cypress/integration/login/*"

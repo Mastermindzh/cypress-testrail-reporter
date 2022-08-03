@@ -1,22 +1,31 @@
 "use strict";
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TestRailValidation = void 0;
-var glob = require('glob');
-var TestRailLogger = require('./testrail.logger');
+var glob = require("glob");
+var TestRailLogger = require("./testrail.logger");
 var TestRailValidation = /** @class */ (function () {
     function TestRailValidation(options) {
         this.options = options;
     }
     TestRailValidation.prototype.validateReporterOptions = function (reporterOptions) {
         if (!reporterOptions) {
-            throw new Error('Missing reporterOptions in cypress.json');
+            throw new Error("Missing reporterOptions in cypress.json");
         }
-        this.validate(reporterOptions, 'host');
-        this.validate(reporterOptions, 'username');
-        this.validate(reporterOptions, 'password');
-        this.validate(reporterOptions, 'projectId');
+        this.validate(reporterOptions, "host");
+        this.validate(reporterOptions, "username");
+        this.validate(reporterOptions, "password");
+        this.validate(reporterOptions, "projectId");
         if (this.options.suiteId) {
-            this.validate(reporterOptions, 'suiteId');
+            this.validate(reporterOptions, "suiteId");
         }
         return reporterOptions;
     };
@@ -26,7 +35,7 @@ var TestRailValidation = /** @class */ (function () {
         }
     };
     /**
-     * This function will validate do we pass suiteId as a CLI agrument as a part of command line execution
+     * This function will validate do we pass suiteId as a CLI argument as a part of command line execution
      * Example:
      * CYPRESS_ENV="testRailSuiteId=1"
      * npx cypress run --env="${CYPRESS_ENV}"
@@ -38,7 +47,7 @@ var TestRailValidation = /** @class */ (function () {
         var index, value, result;
         for (index = 0; index < cliArgs.length; ++index) {
             value = cliArgs[index];
-            if (value.includes('testRailSuiteId') === true) {
+            if (value.includes("testRailSuiteId") === true) {
                 result = value;
                 break;
             }
@@ -51,7 +60,7 @@ var TestRailValidation = /** @class */ (function () {
             var resultArrayArgs = result.split(/,/);
             for (index = 0; index < resultArrayArgs.length; ++index) {
                 value = resultArrayArgs[index];
-                if (value.includes('testRailSuiteId') === true) {
+                if (value.includes("testRailSuiteId") === true) {
                     result = value;
                     break;
                 }
@@ -94,16 +103,20 @@ var TestRailValidation = /** @class */ (function () {
         for (index = 0; index < specArg.length; ++index) {
             value = specArg[index];
             result = value.replace(/(?:\.(?![^.]+$)|[^\w])+/g, "/");
-            directory = result.replace(/\b(js|ts|feature)\b/, '');
+            directory = result.replace(/\b(js|ts|feature)\b/, "");
             workingDirectory.push(directory);
         }
         for (index = 0; index < workingDirectory.length; ++index) {
             value = workingDirectory[index];
             var options = {
                 cwd: value,
-                nodir: true
+                nodir: true,
             };
-            result = glob.sync("*", options);
+            // this needs to match spec, cy, test, etc
+            var cyResults = glob.sync("**/*.cy.*", options);
+            var testResults = glob.sync("**/*.test.*", options);
+            var specResults = glob.sync("**/*.spec.*", options);
+            result = __spreadArray(__spreadArray(__spreadArray([], cyResults, true), testResults, true), specResults, true);
             specFiles.push(result);
         }
         /**

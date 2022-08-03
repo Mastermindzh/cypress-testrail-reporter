@@ -4,6 +4,17 @@ export interface TestRailOptions {
   password: string;
   projectId: number;
   suiteId: number;
+  runName: string;
+  /**
+   * Whether to group all results into a single Testrail run.
+   * If not, a run will be created for every test file
+   */
+  singleRun?: boolean;
+  /**
+   * Disable the Testrail Description field being filled with cypress urls
+   */
+  disableDescription?: boolean;
+  allowFailedScreenshotUpload?: boolean;
   assignedToId?: number;
   includeAllInTestRun?: boolean;
   groupId?: number;
@@ -22,7 +33,7 @@ export enum Status {
 export interface TestRailResult {
   case_id: number;
   status_id: Status;
-  comment?: String;
+  comment?: string;
 }
 
 export interface TestRailCase {
