@@ -202,7 +202,9 @@ export class CypressTestRailReporter extends reporters.Spec {
    * Note: Uploading of screenshot is configurable option
    */
   public submitResults(status, test, comment) {
-    TestRailLogger.log("test" + JSON.stringify(test));
+
+    TestRailLogger.log("testTitle" + test.title);
+    TestRailLogger.log("serverTestCaseIds" + this.serverTestCaseIds.toString());
 
     let caseIds = titleToCaseIds(test.title);
     TestRailLogger.log("caseIds" + caseIds.toString());
@@ -211,7 +213,7 @@ export class CypressTestRailReporter extends reporters.Spec {
       (caseId) => !this.serverTestCaseIds.includes(caseId)
     );
     TestRailLogger.log("invalidCaseIds" + invalidCaseIds.toString());
-    
+
     caseIds = caseIds.filter((caseId) =>
       this.serverTestCaseIds.includes(caseId)
     );
