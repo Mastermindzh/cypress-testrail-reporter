@@ -85,6 +85,7 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
         if (_this.suiteId && _this.suiteId.toString().length) {
             runner.on("start", function () {
                 _this.serverTestCaseIds = _this.testRailApi.getCases(_this.suiteId);
+                TestRailLogger.log("Test cases from suite: " + _this.serverTestCaseIds.toString());
                 /**
                  * runCounter is used to count how many spec files we have during one run
                  * in order to wait for close test run function
@@ -180,7 +181,9 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
     CypressTestRailReporter.prototype.submitResults = function (status, test, comment) {
         var _a;
         var _this = this;
+        TestRailLogger.log("test" + JSON.stringify(test));
         var caseIds = (0, shared_1.titleToCaseIds)(test.title);
+        TestRailLogger.log("caseIds" + caseIds.toString());
         var invalidCaseIds = caseIds.filter(function (caseId) { return !_this.serverTestCaseIds.includes(caseId); });
         caseIds = caseIds.filter(function (caseId) {
             return _this.serverTestCaseIds.includes(caseId);
