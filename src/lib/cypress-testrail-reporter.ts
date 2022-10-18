@@ -81,6 +81,7 @@ export class CypressTestRailReporter extends reporters.Spec {
     if (this.suiteId && this.suiteId.toString().length) {
       runner.on("start", () => {
         this.serverTestCaseIds = this.testRailApi.getCases(this.suiteId);
+        TestRailLogger.log("Test cases from suite: " + this.serverTestCaseIds.toString());
         /**
          * runCounter is used to count how many spec files we have during one run
          * in order to wait for close test run function
@@ -201,7 +202,11 @@ export class CypressTestRailReporter extends reporters.Spec {
    * Note: Uploading of screenshot is configurable option
    */
   public submitResults(status, test, comment) {
+    TestRailLogger.log("test" + JSON.stringify(test));
+
     let caseIds = titleToCaseIds(test.title);
+    TestRailLogger.log("caseIds" + caseIds.toString());
+    
     const invalidCaseIds = caseIds.filter(
       (caseId) => !this.serverTestCaseIds.includes(caseId)
     );
