@@ -206,10 +206,12 @@ export class CypressTestRailReporter extends reporters.Spec {
 
     let caseIds = titleToCaseIds(test.title);
     TestRailLogger.log("caseIds" + caseIds.toString());
-    
+
     const invalidCaseIds = caseIds.filter(
       (caseId) => !this.serverTestCaseIds.includes(caseId)
     );
+    TestRailLogger.log("invalidCaseIds" + invalidCaseIds.toString());
+    
     caseIds = caseIds.filter((caseId) =>
       this.serverTestCaseIds.includes(caseId)
     );
