@@ -181,9 +181,7 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
     CypressTestRailReporter.prototype.submitResults = function (status, test, comment) {
         var _a;
         var _this = this;
-        TestRailLogger.log("test" + JSON.stringify(test));
         var caseIds = (0, shared_1.titleToCaseIds)(test.title);
-        TestRailLogger.log("caseIds" + caseIds.toString());
         var invalidCaseIds = caseIds.filter(function (caseId) { return !_this.serverTestCaseIds.includes(caseId); });
         caseIds = caseIds.filter(function (caseId) {
             return _this.serverTestCaseIds.includes(caseId);
