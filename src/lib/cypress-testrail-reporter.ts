@@ -79,9 +79,10 @@ export class CypressTestRailReporter extends reporters.Spec {
      * runner will not be triggered
      */
     if (this.suiteId && this.suiteId.toString().length) {
+
+      this.serverTestCaseIds = this.testRailApi.getCases(this.suiteId);
+
       runner.on("start", () => {
-        this.serverTestCaseIds = this.testRailApi.getCases(this.suiteId);
-        TestRailLogger.log("Test cases from suite: " + this.serverTestCaseIds.toString());
         /**
          * runCounter is used to count how many spec files we have during one run
          * in order to wait for close test run function
@@ -117,7 +118,8 @@ export class CypressTestRailReporter extends reporters.Spec {
             globalRunId = this.testRailApi.createRun(
               name,
               description,
-              this.suiteId
+              this.suiteId,
+              this.serverTestCaseIds
             );
             if (!this.reporterOptions.singleRun) {
               TestRailCache.store("runId", globalRunId);
@@ -202,13 +204,10 @@ export class CypressTestRailReporter extends reporters.Spec {
    * Note: Uploading of screenshot is configurable option
    */
   public submitResults(status, test, comment) {
-
     TestRailLogger.log("testTitle" + test.title);
     TestRailLogger.log("serverTestCaseIds" + this.serverTestCaseIds.toString());
-
     let caseIds = titleToCaseIds(test.title);
     TestRailLogger.log("caseIds" + caseIds.toString());
-
     const invalidCaseIds = caseIds.filter(
       (caseId) => !this.serverTestCaseIds.includes(caseId)
     );
@@ -217,12 +216,14 @@ export class CypressTestRailReporter extends reporters.Spec {
     caseIds = caseIds.filter((caseId) =>
       this.serverTestCaseIds.includes(caseId)
     );
+    
     if (invalidCaseIds.length > 0)
       TestRailLogger.log(
         `The following test IDs were found in Cypress tests, but not found in Testrail: ${invalidCaseIds}`
       );
+    TestRailLogger.log("invalidCaseIds" + invalidCaseIds.toString());
 
-    if (caseIds.length) {
+    if (caseIds.length > 0) {
       const caseResults = caseIds.map((caseId) => {
         return {
           case_id: caseId,

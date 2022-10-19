@@ -55,17 +55,18 @@ export class TestRail {
         },
       })
         .then((response) => {
+    
           return response.data.cases.map((item) => item.id);
         })
         .catch((error) => console.error(error))
     );
   }
 
-  public createRun(name: string, description: string, suiteId: number): number {
+  public createRun(name: string, description: string, suiteId: number, caseIds:number[]): number {
     let returnNumber = 0;
     if (this.options.includeAllInTestRun === false) {
       this.includeAll = false;
-      this.caseIds = this.getCases(suiteId);
+      this.caseIds = caseIds;
     }
     this.makeSync(
       axios({
