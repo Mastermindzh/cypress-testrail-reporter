@@ -63,6 +63,7 @@ export class CypressTestRailReporter extends reporters.Spec {
     this.testRailValidation.validateReporterOptions(this.reporterOptions);
     if (this.reporterOptions.suiteId) {
       this.suiteId = this.reporterOptions.suiteId;
+      this.serverTestCaseIds = this.testRailApi.getCases(this.suiteId);
     }
     /**
      * This will validate runtime environment variables
@@ -80,7 +81,6 @@ export class CypressTestRailReporter extends reporters.Spec {
      */
     if (this.suiteId && this.suiteId.toString().length) {
 
-      this.serverTestCaseIds = this.testRailApi.getCases(this.suiteId);
 
       runner.on("start", () => {
         /**
