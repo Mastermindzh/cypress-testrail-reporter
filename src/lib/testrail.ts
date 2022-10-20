@@ -28,6 +28,7 @@ export class TestRail {
   private makeSync(promise) {
     let done = false;
     let result = undefined;
+
     (async () => (result = await promise.finally(() => (done = true))))();
     deasync.loopWhile(() => !done);
     return result;
@@ -113,7 +114,8 @@ export class TestRail {
 
   public publishResults(results: TestRailResult[]) {
     this.runId = TestRailCache.retrieve("runId");
-    return this.makeSync(
+    let publishedResults = [];
+    this.makeSync(
       axios({
         method: "post",
         url: `${this.base}/add_results_for_cases/${this.runId}`,
@@ -124,11 +126,12 @@ export class TestRail {
         },
         data: JSON.stringify({ results }),
       })
-        .then((response) => response.data)
+        .then((response) => publishedResults = response.data)
         .catch((error) => {
           console.error(error);
         })
     );
+    return publishedResults;
   }
 
   public uploadAttachment(resultId, path) {

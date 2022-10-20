@@ -204,14 +204,10 @@ export class CypressTestRailReporter extends reporters.Spec {
    * Note: Uploading of screenshot is configurable option
    */
   public submitResults(status, test, comment) {
-    TestRailLogger.log("testTitle" + test.title);
-    TestRailLogger.log("serverTestCaseIds" + this.serverTestCaseIds.toString());
     let caseIds = titleToCaseIds(test.title);
-    TestRailLogger.log("caseIds" + caseIds.toString());
     const invalidCaseIds = caseIds.filter(
       (caseId) => !this.serverTestCaseIds.includes(caseId)
     );
-    TestRailLogger.log("invalidCaseIds" + invalidCaseIds.toString());
 
     caseIds = caseIds.filter((caseId) =>
       this.serverTestCaseIds.includes(caseId)
@@ -221,7 +217,6 @@ export class CypressTestRailReporter extends reporters.Spec {
       TestRailLogger.log(
         `The following test IDs were found in Cypress tests, but not found in Testrail: ${invalidCaseIds}`
       );
-    TestRailLogger.log("invalidCaseIds" + invalidCaseIds.toString());
 
     if (caseIds.length > 0) {
       const caseResults = caseIds.map((caseId) => {
