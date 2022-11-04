@@ -37,7 +37,7 @@ export class TestRail {
   public getCases(suiteId: number) {
     let url = `${this.base}/get_cases/${this.options.projectId}&suite_id=${suiteId}`;
     if (this.options.groupId) {
-      url += `&section_id=${this.options.groupId}`;
+      url += `&group_id=${this.options.groupId}`;
     }
     if (this.options.filter) {
       url += `&filter=${this.options.filter}`;
