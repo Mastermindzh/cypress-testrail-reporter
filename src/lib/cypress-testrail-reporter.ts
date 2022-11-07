@@ -63,6 +63,7 @@ export class CypressTestRailReporter extends reporters.Spec {
     this.testRailValidation.validateReporterOptions(this.reporterOptions);
     if (this.reporterOptions.suiteId) {
       this.suiteId = this.reporterOptions.suiteId;
+      this.serverTestCaseIds = this.testRailApi.getCases(this.suiteId);
     }
     /**
      * This will validate runtime environment variables
@@ -79,8 +80,9 @@ export class CypressTestRailReporter extends reporters.Spec {
      * runner will not be triggered
      */
     if (this.suiteId && this.suiteId.toString().length) {
+
+
       runner.on("start", () => {
-        this.serverTestCaseIds = this.testRailApi.getCases(this.suiteId);
         /**
          * runCounter is used to count how many spec files we have during one run
          * in order to wait for close test run function
@@ -116,7 +118,8 @@ export class CypressTestRailReporter extends reporters.Spec {
             globalRunId = this.testRailApi.createRun(
               name,
               description,
-              this.suiteId
+              this.suiteId,
+              this.serverTestCaseIds
             );
             if (!this.reporterOptions.singleRun) {
               TestRailCache.store("runId", globalRunId);
@@ -205,15 +208,17 @@ export class CypressTestRailReporter extends reporters.Spec {
     const invalidCaseIds = caseIds.filter(
       (caseId) => !this.serverTestCaseIds.includes(caseId)
     );
+
     caseIds = caseIds.filter((caseId) =>
       this.serverTestCaseIds.includes(caseId)
     );
+    
     if (invalidCaseIds.length > 0)
       TestRailLogger.log(
         `The following test IDs were found in Cypress tests, but not found in Testrail: ${invalidCaseIds}`
       );
 
-    if (caseIds.length) {
+    if (caseIds.length > 0) {
       const caseResults = caseIds.map((caseId) => {
         return {
           case_id: caseId,

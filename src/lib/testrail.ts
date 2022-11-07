@@ -28,6 +28,7 @@ export class TestRail {
   private makeSync(promise) {
     let done = false;
     let result = undefined;
+
     (async () => (result = await promise.finally(() => (done = true))))();
     deasync.loopWhile(() => !done);
     return result;
@@ -36,7 +37,7 @@ export class TestRail {
   public getCases(suiteId: number) {
     let url = `${this.base}/get_cases/${this.options.projectId}&suite_id=${suiteId}`;
     if (this.options.groupId) {
-      url += `&section_id=${this.options.groupId}`;
+      url += `&group_id=${this.options.groupId}`;
     }
     if (this.options.filter) {
       url += `&filter=${this.options.filter}`;
@@ -55,17 +56,18 @@ export class TestRail {
         },
       })
         .then((response) => {
+    
           return response.data.cases.map((item) => item.id);
         })
         .catch((error) => console.error(error))
     );
   }
 
-  public createRun(name: string, description: string, suiteId: number): number {
+  public createRun(name: string, description: string, suiteId: number, caseIds:number[]): number {
     let returnNumber = 0;
     if (this.options.includeAllInTestRun === false) {
       this.includeAll = false;
-      this.caseIds = this.getCases(suiteId);
+      this.caseIds = caseIds;
     }
     this.makeSync(
       axios({
@@ -112,7 +114,8 @@ export class TestRail {
 
   public publishResults(results: TestRailResult[]) {
     this.runId = TestRailCache.retrieve("runId");
-    return this.makeSync(
+    let publishedResults = [];
+    this.makeSync(
       axios({
         method: "post",
         url: `${this.base}/add_results_for_cases/${this.runId}`,
@@ -123,11 +126,12 @@ export class TestRail {
         },
         data: JSON.stringify({ results }),
       })
-        .then((response) => response.data)
+        .then((response) => publishedResults = response.data)
         .catch((error) => {
           console.error(error);
         })
     );
+    return publishedResults;
   }
 
   public uploadAttachment(resultId, path) {
