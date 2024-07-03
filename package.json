@@ -34,7 +34,7 @@
     "deasync": "^0.1.23",
     "form-data": "^4.0.0",
     "glob": "^7.1.7",
-    "mocha": "^8.4.0",
+    "mocha": "^10.6.0",
     "moment": "^2.29.1"
   },
   "devDependencies": {
